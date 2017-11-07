@@ -26,7 +26,8 @@
 
 #include <common.h>
 #include <config.h>
-
+//#define CONFIG_SKIP_LOWLEVEL_INIT
+//#define CONFIG_SKIP_RELOCATE_UBOOT
 /*
  *************************************************************************
  *
@@ -115,8 +116,9 @@ start_code:
 	msr	cpsr, r0
 
 	bl	coloured_LED_init
-	bl	red_LED_on
-
+	bl pre_lowlevel_init  /* 板级预初始化 */
+	bl system_clock_init  /* 系统时钟初始化 */
+	
 #if	defined(CONFIG_AT91RM9200DK) || defined(CONFIG_AT91RM9200EK)
 	/*
 	 * relocate exception table
@@ -130,107 +132,10 @@ copyex:
 	str	r3, [r1], #4
 	bne	copyex
 #endif
-
-#if defined(CONFIG_S3C2400) || defined(CONFIG_S3C2410)
-	/* turn off the watchdog */
-
-# if defined(CONFIG_S3C2400)
-#  define pWTCON	0x15300000
-#  define INTMSK	0x14400008	/* Interupt-Controller base addresses */
-#  define CLKDIVN	0x14800014	/* clock divisor register */
-#else
-#  define pWTCON	0x53000000
-#  define INTMSK	0x4A000008	/* Interupt-Controller base addresses */
-#  define INTSUBMSK	0x4A00001C
-#  define CLKDIVN	0x4C000014	/* clock divisor register */
-# endif
-
-	ldr	r0, =pWTCON
-	mov	r1, #0x0
-	str	r1, [r0]
-
-	/*
-	 * mask all IRQs by setting all bits in the INTMR - default
-	 */
-	mov	r1, #0xffffffff
-	ldr	r0, =INTMSK
-	str	r1, [r0]
-# if defined(CONFIG_S3C2410)
-	ldr	r1, =0x3ff
-	ldr	r0, =INTSUBMSK
-	str	r1, [r0]
-# endif
-
-	/* FCLK:HCLK:PCLK = 1:2:4 */
-	/* default FCLK is 120 MHz ! */
-	ldr	r0, =CLKDIVN
-	mov	r1, #3
-	str	r1, [r0]
-#endif	/* CONFIG_S3C2400 || CONFIG_S3C2410 */
-
 	/*
 	 * we do sys-critical inits only at reboot,
 	 * not when booting from ram!
 	 */
-#ifndef CONFIG_SKIP_LOWLEVEL_INIT
-	bl	cpu_init_crit
-#endif
-
-#ifndef CONFIG_SKIP_RELOCATE_UBOOT
-relocate:				/* relocate U-Boot to RAM	    */
-	adr	r0, _start		/* r0 <- current position of code   */
-	ldr	r1, _TEXT_BASE		/* test if we run from flash or RAM */
-	cmp	r0, r1			/* don't reloc during debug         */
-	beq	stack_setup
-
-	ldr	r2, _armboot_start
-	ldr	r3, _bss_start
-	sub	r2, r3, r2		/* r2 <- size of armboot            */
-	add	r2, r0, r2		/* r2 <- source end address         */
-
-copy_loop:
-	ldmia	r0!, {r3-r10}		/* copy from source address [r0]    */
-	stmia	r1!, {r3-r10}		/* copy to   target address [r1]    */
-	cmp	r0, r2			/* until source end addreee [r2]    */
-	ble	copy_loop
-#endif	/* CONFIG_SKIP_RELOCATE_UBOOT */
-
-	/* Set up the stack						    */
-stack_setup:
-	ldr	r0, _TEXT_BASE		/* upper 128 KiB: relocated uboot   */
-	sub	r0, r0, #CONFIG_SYS_MALLOC_LEN	/* malloc area              */
-	sub	r0, r0, #CONFIG_SYS_GBL_DATA_SIZE /* bdinfo                 */
-#ifdef CONFIG_USE_IRQ
-	sub	r0, r0, #(CONFIG_STACKSIZE_IRQ+CONFIG_STACKSIZE_FIQ)
-#endif
-	sub	sp, r0, #12		/* leave 3 words for abort-stack    */
-
-clear_bss:
-	ldr	r0, _bss_start		/* find start of bss segment        */
-	ldr	r1, _bss_end		/* stop here                        */
-	mov	r2, #0x00000000		/* clear                            */
-
-clbss_l:str	r2, [r0]		/* clear loop...                    */
-	add	r0, r0, #4
-	cmp	r0, r1
-	ble	clbss_l
-
-	ldr	pc, _start_armboot
-
-_start_armboot:	.word start_armboot
-
-
-/*
- *************************************************************************
- *
- * CPU_init_critical registers
- *
- * setup important registers
- * setup memory timing
- *
- *************************************************************************
- */
-
 
 #ifndef CONFIG_SKIP_LOWLEVEL_INIT
 cpu_init_crit:
@@ -263,6 +168,94 @@ cpu_init_crit:
 	mov	lr, ip
 	mov	pc, lr
 #endif /* CONFIG_SKIP_LOWLEVEL_INIT */
+
+#ifndef CONFIG_SKIP_RELOCATE_UBOOT
+relocate:				/* relocate U-Boot to RAM	    */
+	adr	r0, _start		/* r0 <- current position of code   */
+	ldr	r1, _TEXT_BASE		/* test if we run from flash or RAM */
+	cmp	r0, r1			/* don't reloc during debug         */
+	beq	stack_setup
+
+	ldr	r2, _armboot_start
+	ldr	r3, _bss_start
+	sub	r2, r3, r2		/* r2 <- size of armboot            */
+	add	r2, r0, r2		/* r2 <- source end address         */
+
+copy_loop:
+	ldmia	r0!, {r3-r10}		/* copy from source address [r0]    */
+	stmia	r1!, {r3-r10}		/* copy to   target address [r1]    */
+	cmp	r0, r2			/* until source end addreee [r2]    */
+	ble	copy_loop
+#endif	/* CONFIG_SKIP_RELOCATE_UBOOT */
+
+pre_lowlevel_init:
+	#  define pWTCON	0x53000000
+	#  define INTMSK	0x4A000008	/* Interupt-Controller base addresses */
+	#  define INTSUBMSK	0x4A00001C
+	#  define CLKDIVN	0x4C000014	/* clock divisor register */
+	/* turn off the watchdog */
+	ldr	r0, =pWTCON
+	mov	r1, #0x0
+	str	r1, [r0]
+	/*mask all IRQs by setting all bits in the INTMR - default*/
+	mov	r1, #0xffffffff
+	ldr	r0, =INTMSK
+	str	r1, [r0]
+	ldr	r1, =0x7fff
+	ldr	r0, =INTSUBMSK
+	str	r1, [r0]
+
+	mov	pc, lr
+
+
+
+#define CLKDIVN	0x4C000014	
+#define CAMDIVN	0x4C000018
+#define CLKDIV 0x5   /* FCLK:HCLK:PCLK = 1:4:8 */
+
+system_clock_init:
+	/* FCLK:HCLK:PCLK = 1:4:8 */
+	/* default FCLK is 400 MHz ! */
+	ldr 	r0, =CAMDIVN
+	mov 	r1, #0
+	str 	r1, [r0]
+	ldr	r0, =CLKDIVN
+	mov	r1, #CLKDIV
+	str	r1, [r0]
+	
+     /* 设置arm920t为异步时钟模式
+     * 复位时，arm920t处于快速总线时钟模式，该模式下
+     * core和AMBA都由BCLK控制，设置为异步模式后，core
+     * 由FCLK控制
+     */
+	mrc	p15, 0, r1, c1, c0, 0	
+	orr	r1, r1, #0xc0000000		
+	mcr	p15, 0, r1, c1, c0, 0	
+	mov	pc, lr
+	/* Set up the stack						    */
+stack_setup:
+	ldr	r0, _TEXT_BASE		/* upper 128 KiB: relocated uboot   */
+	sub	r0, r0, #CONFIG_SYS_MALLOC_LEN	/* malloc area              */
+	sub	r0, r0, #CONFIG_SYS_GBL_DATA_SIZE /* bdinfo                 */
+#ifdef CONFIG_USE_IRQ
+	sub	r0, r0, #(CONFIG_STACKSIZE_IRQ+CONFIG_STACKSIZE_FIQ)
+#endif
+	sub	sp, r0, #12		/* leave 3 words for abort-stack    */
+
+clear_bss:
+	ldr	r0, _bss_start		/* find start of bss segment        */
+	ldr	r1, _bss_end		/* stop here                        */
+	mov	r2, #0x00000000		/* clear                            */
+
+clbss_l:str	r2, [r0]		/* clear loop...                    */
+	add	r0, r0, #4
+	cmp	r0, r1
+	ble	clbss_l
+
+	ldr	pc, _start_armboot
+
+_start_armboot:	.word start_armboot
+
 
 /*
  *************************************************************************

@@ -135,6 +135,7 @@ static int init_baudrate (void)
 
 static int display_banner (void)
 {
+		
 	printf ("\n\n%s\n\n", version_string);
 	debug ("U-Boot code: %08lX -> %08lX  BSS: -> %08lX\n",
 	       _armboot_start, _bss_start, _bss_end);
@@ -185,6 +186,7 @@ static void display_flash_config (ulong size)
 {
 	puts ("Flash: ");
 	print_size (size, "\n");
+
 }
 #endif /* CONFIG_SYS_NO_FLASH */
 
