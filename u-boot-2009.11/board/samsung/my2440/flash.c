@@ -65,12 +65,10 @@ ulong flash_init (void)
 		ulong flashbase = 0;
 
 		flash_info[i].flash_id =
-#if defined(CONFIG_AMD_LV400)
-			(AMD_MANUFACT & FLASH_VENDMASK) |
-			(AMD_ID_LV400B & FLASH_TYPEMASK);
-#elif defined(CONFIG_AMD_LV800)
-			(AMD_MANUFACT & FLASH_VENDMASK) |
-			(AMD_ID_LV800B & FLASH_TYPEMASK);
+#if defined(CONFIG_MX_LV160)
+	(MX_MANUFACT & FLASH_VENDMASK) |
+	(MX_ID_LV160B & FLASH_TYPEMASK);
+
 #else
 #error "Unknown flash configured"
 #endif
@@ -129,8 +127,8 @@ void flash_print_info (flash_info_t * info)
 	int i;
 
 	switch (info->flash_id & FLASH_VENDMASK) {
-	case (AMD_MANUFACT & FLASH_VENDMASK):
-		printf ("AMD: ");
+	case (MX_MANUFACT & FLASH_VENDMASK):
+		printf ("MX: ");
 		break;
 	default:
 		printf ("Unknown Vendor ");
@@ -138,12 +136,10 @@ void flash_print_info (flash_info_t * info)
 	}
 
 	switch (info->flash_id & FLASH_TYPEMASK) {
-	case (AMD_ID_LV400B & FLASH_TYPEMASK):
-		printf ("1x Amd29LV400BB (4Mbit)\n");
+	case (MX_ID_LV160B & FLASH_TYPEMASK):
+		printf ("1x Mx29LV160DB (2MB)\n");
 		break;
-	case (AMD_ID_LV800B & FLASH_TYPEMASK):
-		printf ("1x Amd29LV800BB (8Mbit)\n");
-		break;
+
 	default:
 		printf ("Unknown Chip Type\n");
 		goto Done;
@@ -186,7 +182,7 @@ int flash_erase (flash_info_t * info, int s_first, int s_last)
 	}
 
 	if ((info->flash_id & FLASH_VENDMASK) !=
-	    (AMD_MANUFACT & FLASH_VENDMASK)) {
+	    (MX_MANUFACT & FLASH_VENDMASK)) {
 		return ERR_UNKNOWN_FLASH_VENDOR;
 	}
 

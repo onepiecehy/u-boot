@@ -31,6 +31,7 @@
 
 #define CONFIG_MY2440_LED 1
 #define CONFIG_AUTO_COMPLETE
+#define CONFIG_CMDLINE_EDITING
 #define CONFIG_SKIP_LOWLEVEL_INIT
 /*
  * High Level Configuration Options
@@ -116,7 +117,7 @@
  * Miscellaneous configurable options
  */
 #define	CONFIG_SYS_LONGHELP				/* undef to save memory		*/
-#define	CONFIG_SYS_PROMPT		"SMDK2410 # "	/* Monitor Command Prompt	*/
+#define	CONFIG_SYS_PROMPT		"MY2440 # "	/* Monitor Command Prompt	*/
 #define	CONFIG_SYS_CBSIZE		256		/* Console I/O Buffer Size	*/
 #define	CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE+sizeof(CONFIG_SYS_PROMPT)+16) /* Print Buffer Size */
 #define	CONFIG_SYS_MAXARGS		16		/* max number of command args	*/
@@ -158,22 +159,13 @@
  * FLASH and environment organization
  */
 
-#define CONFIG_AMD_LV400	1	/* uncomment this if you have a LV400 flash */
-#if 0
-#define CONFIG_AMD_LV800	1	/* uncomment this if you have a LV800 flash */
-#endif
+#define CONFIG_MX_LV160	1	/* uncomment this if you have a LV400 flash */
 
 #define CONFIG_SYS_MAX_FLASH_BANKS	1	/* max number of memory banks */
-#ifdef CONFIG_AMD_LV800
-#define PHYS_FLASH_SIZE		0x00100000 /* 1MB */
-#define CONFIG_SYS_MAX_FLASH_SECT	(19)	/* max number of sectors on one chip */
-#define CONFIG_ENV_ADDR		(CONFIG_SYS_FLASH_BASE + 0x0F0000) /* addr of environment */
-#endif
-#ifdef CONFIG_AMD_LV400
-#define PHYS_FLASH_SIZE		0x00080000 /* 512KB */
-#define CONFIG_SYS_MAX_FLASH_SECT	(11)	/* max number of sectors on one chip */
-#define CONFIG_ENV_ADDR		(CONFIG_SYS_FLASH_BASE + 0x070000) /* addr of environment */
-#endif
+
+#define PHYS_FLASH_SIZE		0x00200000 /* 2MB */
+#define CONFIG_SYS_MAX_FLASH_SECT	(35)	/* max number of sectors on one chip */
+#define CONFIG_ENV_ADDR		(CONFIG_SYS_FLASH_BASE + 0x1F0000) /* addr of environment */
 
 /* timeout values are in ticks */
 #define CONFIG_SYS_FLASH_ERASE_TOUT	(5*CONFIG_SYS_HZ) /* Timeout for Flash Erase */

@@ -219,6 +219,7 @@ extern flash_info_t *flash_get_info(ulong base);
 
 #define AMD_ID_LV160T	0x22C422C4	/* 29LV160T ID (16 M, top boot sector)	*/
 #define AMD_ID_LV160B	0x22492249	/* 29LV160B ID (16 M, bottom boot sect) */
+#define MX_ID_LV160B	0x22492249	/* 29LV320T by Macronix, AMD compatible */
 
 #define AMD_ID_DL163T	0x22282228	/* 29DL163T ID (16 M, top boot sector)	*/
 #define AMD_ID_DL163B	0x222B222B	/* 29DL163B ID (16 M, bottom boot sect) */
