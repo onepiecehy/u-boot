@@ -243,8 +243,13 @@ int flash_erase (flash_info_t * info, int s_first, int s_last)
 					chip = READY;
 
 				if (!chip
-				    && (result & 0xFFFF) & BIT_PROGRAM_ERROR)
+				    && (result & 0xFFFF) & BIT_PROGRAM_ERROR) {
+				    result = *addr;
+				    if ((result & 0xFFFF) & BIT_ERASE_DONE)
+					chip = READY;
+				    else
 					chip = ERR;
+			       }
 
 			} while (!chip);
 
