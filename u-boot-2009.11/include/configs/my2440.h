@@ -33,7 +33,7 @@
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_CMDLINE_EDITING
 #define CONFIG_SKIP_LOWLEVEL_INIT
-//#define DEBUG
+#define DEBUG 1
 /*
  * High Level Configuration Options
  * (easy to change)
@@ -101,6 +101,7 @@
 #define CONFIG_CMD_DATE
 #define CONFIG_CMD_ELF
 #define CONFIG_CMD_PING
+#define CONFIG_CMD_NAND
 
 
 #define CONFIG_BOOTDELAY	3
@@ -177,7 +178,23 @@
 #define CONFIG_SYS_FLASH_ERASE_TOUT	(5*CONFIG_SYS_HZ) /* Timeout for Flash Erase */
 #define CONFIG_SYS_FLASH_WRITE_TOUT	(5*CONFIG_SYS_HZ) /* Timeout for Flash Write */
 
+#define  CONFIG_SETUP_NOR
+
+#ifdef CONFIG_SETUP_NOR
 #define	CONFIG_ENV_IS_IN_FLASH	1
 #define CONFIG_ENV_SIZE		0x10000	/* Total Size of Environment Sector */
+#elif CONFIG_SETUP_NAND
+#define	CONFIG_ENV_IS_IN_NAND	1
+#define CONFIG_ENV_SIZE		0x80000	/* Total Size of Environment Sector */
+#endif
+
+/*-----------------------------------------------------------------------
+ * NAND FLASH and environment organization
+ */
+#define CONFIG_NAND_S3C2440
+#define CONFIG_SYS_MAX_NAND_DEVICE 1
+#define CONFIG_SYS_NAND_BASE 0x4E000000
+#define NFCONF_OFFSET    0x0
+#define NFCONT_OFFSET    0x4
 
 #endif	/* __CONFIG_H */
