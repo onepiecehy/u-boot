@@ -32,8 +32,7 @@
 #define CONFIG_MY2440_LED 1
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_CMDLINE_EDITING
-#define CONFIG_SKIP_LOWLEVEL_INIT
-#define DEBUG 1
+//#define DEBUG 1
 /*
  * High Level Configuration Options
  * (easy to change)
@@ -133,7 +132,7 @@
 #define CONFIG_SYS_MEMTEST_START	0x30000000	/* memtest works on	*/
 #define CONFIG_SYS_MEMTEST_END		0x33F00000	/* 63 MB in DRAM	*/
 
-#define	CONFIG_SYS_LOAD_ADDR		0x33000000	/* default load address	*/
+#define	CONFIG_SYS_LOAD_ADDR		0x32000000	/* default load address	*/
 
 #define	CONFIG_SYS_HZ			1000
 
@@ -178,13 +177,14 @@
 #define CONFIG_SYS_FLASH_ERASE_TOUT	(5*CONFIG_SYS_HZ) /* Timeout for Flash Erase */
 #define CONFIG_SYS_FLASH_WRITE_TOUT	(5*CONFIG_SYS_HZ) /* Timeout for Flash Write */
 
-#define  CONFIG_SETUP_NOR
+#define  CONFIG_SETUP_NAND
 
 #ifdef CONFIG_SETUP_NOR
 #define	CONFIG_ENV_IS_IN_FLASH	1
 #define CONFIG_ENV_SIZE		0x10000	/* Total Size of Environment Sector */
-#elif CONFIG_SETUP_NAND
+#elif defined (CONFIG_SETUP_NAND)
 #define	CONFIG_ENV_IS_IN_NAND	1
+#define CONFIG_ENV_OFFSET		0x80000
 #define CONFIG_ENV_SIZE		0x80000	/* Total Size of Environment Sector */
 #endif
 
@@ -194,7 +194,6 @@
 #define CONFIG_NAND_S3C2440
 #define CONFIG_SYS_MAX_NAND_DEVICE 1
 #define CONFIG_SYS_NAND_BASE 0x4E000000
-#define NFCONF_OFFSET    0x0
-#define NFCONT_OFFSET    0x4
+#define CONFIG_UBOOT_SIZE       0x80000
 
 #endif	/* __CONFIG_H */

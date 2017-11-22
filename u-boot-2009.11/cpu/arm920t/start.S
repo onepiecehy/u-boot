@@ -165,17 +165,28 @@ cpu_init_crit:
 
 	bl	lowlevel_init
 
-	mov	lr, ip
-	mov	pc, lr
 #endif /* CONFIG_SKIP_LOWLEVEL_INIT */
 
 #ifndef CONFIG_SKIP_RELOCATE_UBOOT
 relocate:				/* relocate U-Boot to RAM	    */
+
 	adr	r0, _start		/* r0 <- current position of code   */
 	ldr	r1, _TEXT_BASE		/* test if we run from flash or RAM */
+
 	cmp	r0, r1			/* don't reloc during debug         */
 	beq	stack_setup
+        
+	mov r2, #0 
+    str r2, [r2]
+    ldr r2, [r2]
+    cmp r2, #0
+    bne copy_to_ram_from_nor
+    mov sp, #0x1000
+	
+    bl  copy_to_ram_from_nand
+	b   stack_setup
 
+copy_to_ram_from_nor:
 	ldr	r2, _armboot_start
 	ldr	r3, _bss_start
 	sub	r2, r3, r2		/* r2 <- size of armboot            */
@@ -232,6 +243,7 @@ system_clock_init:
 	orr	r1, r1, #0xc0000000		
 	mcr	p15, 0, r1, c1, c0, 0	
 	mov	pc, lr
+
 	/* Set up the stack						    */
 stack_setup:
 	ldr	r0, _TEXT_BASE		/* upper 128 KiB: relocated uboot   */

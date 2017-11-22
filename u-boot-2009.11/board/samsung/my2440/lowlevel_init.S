@@ -131,12 +131,31 @@ _TEXT_BASE:
 
 .globl lowlevel_init
 lowlevel_init:
-        mov ip, lr
-        bl mem_ctrl_asm_init  /* 内存控制器初始化 */
-        mov lr, ip
+    mov ip, lr
+	bl nand_asm_init      /* NAND FLASH初始化 */
+    bl mem_ctrl_asm_init  /* 内存控制器初始化 */
+    mov lr, ip
 
 	/* everything is fine now */
 	mov	pc, lr
+
+ /*
+ * NAND FLASH初始化函数
+ * TACLS:TWRPH0:TWRPH1 = 1:2:1, BUS_WIDTH_8 
+ */
+#define S3C2440_NAND_BASE		0x4E000000
+#define NFCONF_OFFSET    0x0
+#define NFCONT_OFFSET    0x4
+
+nand_asm_init:
+	ldr	r0, =S3C2440_NAND_BASE
+    ldr	r1, =0x001210
+	str   	r1, [r0, #NFCONF_OFFSET]
+	
+    mov	r1, #0x3
+	str   	r1, [r0, #NFCONT_OFFSET]
+    
+    mov	pc, lr
 
 mem_ctrl_asm_init:
 	/* memory control configuration */
